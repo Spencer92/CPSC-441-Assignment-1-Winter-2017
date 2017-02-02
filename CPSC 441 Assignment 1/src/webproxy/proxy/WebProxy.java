@@ -1,8 +1,12 @@
 package webproxy.proxy;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -34,6 +38,16 @@ public class WebProxy {
 		  Scanner inputStream = null;
 		  PrintWriter outputStream = null;
 		  ServerSocket serverSocket = null;
+		  byte [] byt = new byte["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
+		  char [] ch = new char["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
+		  
+		  ch = "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".toCharArray();
+		  
+		  for(int i = 0; i < ch.length; i++)
+		  {
+			  byt[i] = Character.toString(ch[i]).getBytes()[0];
+		  }
+		  
 		  try
 		  {
 			 // Wait for connection on port 6789
@@ -44,9 +58,16 @@ public class WebProxy {
 			 Socket socket = serverSocket.accept();
 			 System.out.println(socket.getOutputStream());
 			 
-			 inputStream = new Scanner(new InputStreamReader(new java.io.InputStream(), "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt"));
 			 
 			 
+			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()/*new ByteArrayInputStream(byt)*/));
+			 
+			 
+			 
+/*			 for(int i = 0; i < byt.length; i++)
+			 {
+				 System.out.println(Byte.toString(byt[i]));
+			 }*/
 			 // Connection made, set up streams
 /*			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
 		 	 outputStream = new PrintWriter(new
@@ -63,6 +84,10 @@ public class WebProxy {
 		     System.out.println("Closing connection");
 		     inputStream.close();
 		     outputStream.close();*/
+		  }
+		  catch(UnsupportedEncodingException e)
+		  {
+			  e.printStackTrace();
 		  }
 		  catch (Exception e)
 		  {
