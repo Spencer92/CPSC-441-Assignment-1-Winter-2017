@@ -39,10 +39,16 @@ public class WebProxy {
 			 // Wait for connection on port 6789
 			 System.out.println("Waiting for a connection.");
 			 serverSocket = new ServerSocket(port);
+			 String str = serverSocket.toString();
+			 System.out.println(str);
 			 Socket socket = serverSocket.accept();
+			 System.out.println(socket.getOutputStream());
+			 
+			 inputStream = new Scanner(new InputStreamReader(new java.io.InputStream(), "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt"));
+			 
 			 
 			 // Connection made, set up streams
-			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
+/*			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
 		 	 outputStream = new PrintWriter(new
 		 			 DataOutputStream(socket.getOutputStream()));
 		 	 
@@ -56,7 +62,7 @@ public class WebProxy {
 		     outputStream.flush();
 		     System.out.println("Closing connection");
 		     inputStream.close();
-		     outputStream.close();
+		     outputStream.close();*/
 		  }
 		  catch (Exception e)
 		  {
@@ -83,8 +89,9 @@ public class WebProxy {
 */
 	public static void main(String[] args) {
 
-                String server = "localhost"; // webproxy and client runs in the same machine
-                int server_port = 0;
+		String server = "localhost"; // webproxy and client runs in the same machine
+//		String server = "http://pages.cpsc.ucalgary.ca/";
+		int server_port = 0;
 		try {
                 // check for command line arguments
                 	if (args.length == 1) {
