@@ -78,12 +78,15 @@ public class WebProxy {
 		 	 while(inputStream.hasNext())
 		 	 {
 		 		 s = inputStream.nextLine();
-		 		 System.out.println("1" + s);
+		 		 System.out.println(s);
 		 	 }
 
 			 // Output text to the client
-			 outputStream.println(s);
-		     outputStream.flush();
+		 	 
+		 	 for(int i = 0; i < 100; i++)
+		 		 outputStream.println(s);
+		     
+			 outputStream.flush();
 		     System.out.println("Closing connection");
 		     inputStream.close();
 		     outputStream.close();
