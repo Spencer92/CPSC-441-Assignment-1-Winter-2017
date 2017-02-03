@@ -34,7 +34,7 @@ public class WebProxy {
 
 	/* Intialize server listening port */	
 		//Modified from Server1.java
-		  String s;
+		  String s = "";
 		  Scanner inputStream = null;
 		  PrintWriter outputStream = null;
 		  ServerSocket serverSocket = null;
@@ -69,21 +69,24 @@ public class WebProxy {
 				 System.out.println(Byte.toString(byt[i]));
 			 }*/
 			 // Connection made, set up streams
-/*			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
+//			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
 		 	 outputStream = new PrintWriter(new
 		 			 DataOutputStream(socket.getOutputStream()));
 		 	 
 		 	// Read a line from the client
-			 s = inputStream.nextLine();
-			 System.out.println(s);
 
+		 	 while(inputStream.hasNext())
+		 	 {
+		 		 s = inputStream.nextLine();
+		 		 System.out.println("1" + s);
+		 	 }
 
 			 // Output text to the client
 			 outputStream.println(s);
 		     outputStream.flush();
 		     System.out.println("Closing connection");
 		     inputStream.close();
-		     outputStream.close();*/
+		     outputStream.close();
 		  }
 		  catch(UnsupportedEncodingException e)
 		  {
@@ -113,7 +116,7 @@ public class WebProxy {
  * A simple test driver
 */
 	public static void main(String[] args) {
-
+//   http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt
 		String server = "localhost"; // webproxy and client runs in the same machine
 //		String server = "http://pages.cpsc.ucalgary.ca/";
 		int server_port = 0;
