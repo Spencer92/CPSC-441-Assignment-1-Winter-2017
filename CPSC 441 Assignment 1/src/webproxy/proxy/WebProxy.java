@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -34,19 +35,23 @@ public class WebProxy {
 
 	/* Intialize server listening port */	
 		//Modified from Server1.java
+		ArrayList<Byte> bt = new ArrayList<Byte>();
 		  String s = "";
 		  Scanner inputStream = null;
 		  PrintWriter outputStream = null;
+		  ByteArrayInputStream bis = null;
+		  InputStream stream;
 		  ServerSocket serverSocket = null;
-		  byte [] byt = new byte["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
+		  int test;
+		  byte [] data = new byte[5];
 		  char [] ch = new char["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
 		  
 		  ch = "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".toCharArray();
 		  
-		  for(int i = 0; i < ch.length; i++)
-		  {
-			  byt[i] = Character.toString(ch[i]).getBytes()[0];
-		  }
+//		  for(int i = 0; i < ch.length; i++)
+//		  {
+//			  data[i] = Character.toString(ch[i]).getBytes()[0];
+//		  }
 		  
 		  try
 		  {
@@ -56,12 +61,20 @@ public class WebProxy {
 			 String str = serverSocket.toString();
 			 System.out.println(str);
 			 Socket socket = serverSocket.accept();
-			 System.out.println(socket.getOutputStream());
+//			 System.out.println(socket.getOutputStream());
+			 stream = socket.getInputStream();
+			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			 
+			 do
+			 {
+				 test = stream.read(data);
+				 s = new String(data);
+				 System.out.print(s);
+				 outputStream.print(s);
+			 }while(test != 0);
 			 
-			 
-			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()/*new ByteArrayInputStream(byt)*/));
-			 
+//			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()/*new ByteArrayInputStream(byt)*/));
+//			 bis = new ByteArrayInputStream(socket.getInputStream());
 			 
 			 
 /*			 for(int i = 0; i < byt.length; i++)
@@ -70,21 +83,25 @@ public class WebProxy {
 			 }*/
 			 // Connection made, set up streams
 //			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()));
-		 	 outputStream = new PrintWriter(new
-		 			 DataOutputStream(socket.getOutputStream()));
+//		 	 outputStream = new PrintWriter(new
+//		 			 DataOutputStream(socket.getOutputStream()));
 		 	 
 		 	// Read a line from the client
 
-		 	 while(inputStream.hasNext())
-		 	 {
-		 		 s = inputStream.nextLine();
-		 		 System.out.println(s);
-		 	 }
+//		 	 while(inputStream.hasNext())		 	 {
+//		 		 s = inputStream.nextLine();
+//		 		 outputStream.println(s);
+//		 		}
 
 			 // Output text to the client
 		 	 
-		 	 for(int i = 0; i < 100; i++)
-		 		 outputStream.println(s);
+//		 	 while(inputStream.hasNextLine())//for(int i = 0; i < 10; i++)
+//		 	 {
+//		 		 s = inputStream.nextLine();
+//		 		 if(s.equals(""))
+//		 		 outputStream.println(s);
+//		 	 }	
+//		 		 outputStream.println("Where the hell is this going");
 		     
 			 outputStream.flush();
 		     System.out.println("Closing connection");
