@@ -7,10 +7,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * WebProxy Class
@@ -37,13 +38,14 @@ public class WebProxy {
 		//Modified from Server1.java
 		ArrayList<Byte> bt = new ArrayList<Byte>();
 		  String s = "";
-		  Scanner inputStream = null;
+		  String fullLengthData = "";
+//		  Scanner inputStream = null;
 		  PrintWriter outputStream = null;
 		  ByteArrayInputStream bis = null;
 		  InputStream stream;
 		  ServerSocket serverSocket = null;
 		  int test;
-		  byte [] data = new byte[5];
+		  byte [] data = new byte[1];
 		  char [] ch = new char["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
 		  
 		  ch = "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".toCharArray();
@@ -63,12 +65,40 @@ public class WebProxy {
 			 Socket socket = serverSocket.accept();
 //			 System.out.println(socket.getOutputStream());
 			 stream = socket.getInputStream();
+			 
 			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			 
 			 do
 			 {
 				 test = stream.read(data);
 				 s = new String(data);
+				 fullLengthData += new String(data);
+				 if(s.equals("\r"))
+				 {
+					 test = stream.read(data);
+					 s = new String(data);
+					 fullLengthData += new String(data);
+					 System.out.print("\\r");
+					 if(s.equals("\n"))
+					 {
+						 test = stream.read(data);
+						 s = new String(data);
+						 fullLengthData += new String(data);
+						 System.out.println("\\n");
+						 if(s.equals("\r"))
+						 {
+							 test = stream.read(data);
+							 s = new String(data);
+							 fullLengthData += new String(data);
+							 System.out.print("\\r");
+							 if(s.equals("\n"))
+							 {
+								 fullLengthData += new String(data);
+								 break;
+							 }
+						 }
+					 }
+				 }
 				 System.out.print(s);
 				 outputStream.print(s);
 			 }while(test != 0);
@@ -105,7 +135,7 @@ public class WebProxy {
 		     
 			 outputStream.flush();
 		     System.out.println("Closing connection");
-		     inputStream.close();
+		     stream.close();
 		     outputStream.close();
 		  }
 		  catch(UnsupportedEncodingException e)
@@ -118,7 +148,7 @@ public class WebProxy {
 		     System.out.println("Error " + e);
 		  }
 
-		
+		//asdfaskl;dfjal;sdkfj
 
 	}
 
