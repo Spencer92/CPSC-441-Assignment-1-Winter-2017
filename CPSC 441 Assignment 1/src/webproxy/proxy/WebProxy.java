@@ -3,6 +3,7 @@ package webproxy.proxy;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -25,7 +26,9 @@ import java.net.Socket;
 public class WebProxy {
 
         
-
+	private String allData;
+	static final int PORT_NUMBER = 80;
+	
      /**
      *  Constructor that initalizes the server listenig port
          *
@@ -40,7 +43,7 @@ public class WebProxy {
 		  String s = "";
 		  String fullLengthData = "";
 //		  Scanner inputStream = null;
-		  PrintWriter outputStream = null;
+//		  PrintWriter outputStream = null;
 		  ByteArrayInputStream bis = null;
 		  InputStream stream;
 		  ServerSocket serverSocket = null;
@@ -66,7 +69,7 @@ public class WebProxy {
 //			 System.out.println(socket.getOutputStream());
 			 stream = socket.getInputStream();
 			 
-			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+//			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			 
 			 do
 			 {
@@ -100,7 +103,7 @@ public class WebProxy {
 					 }
 				 }
 				 System.out.print(s);
-				 outputStream.print(s);
+//				 outputStream.print(s);
 			 }while(test != 0);
 			 
 //			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()/*new ByteArrayInputStream(byt)*/));
@@ -133,10 +136,12 @@ public class WebProxy {
 //		 	 }	
 //		 		 outputStream.println("Where the hell is this going");
 		     
-			 outputStream.flush();
+//			 outputStream.flush();
 		     System.out.println("Closing connection");
 		     stream.close();
-		     outputStream.close();
+//		     outputStream.close();
+		     
+		     this.allData = fullLengthData;
 		  }
 		  catch(UnsupportedEncodingException e)
 		  {
@@ -155,12 +160,61 @@ public class WebProxy {
      /**
      * The webproxy logic goes here 
      */
-	public void start(){
+	public void start()
+	{
+		String url = getWebsite();
+		InputStream stream = null;
+		PrintWriter outputStream = null;
+		String output = "";
+		byte [] data = new byte[1];
+		int test;
 		
-
+		try {
+			Socket socket = new Socket(url,PORT_NUMBER);
+			stream = socket.getInputStream();
+			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+			test = stream.read(data);
+			
+			while(test != -1)
+			{
+				output += new String(data);
+				test = stream.read(data);
+			}
+			outputStream.print(output);
+			outputStream.flush();
+			outputStream.close();
+			stream.close();
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 
+	public String getWebsite()
+	{
+		char [] allDataArray = this.allData.toCharArray();
+		String url = "";
+		int index = 0;
+		
+		while(allDataArray[index] != 'h')
+		{
+			index++;
+		}
+		
+		while(allDataArray[index] != ' ')
+		{
+			url += Character.toString(allDataArray[index]);
+			index++;
+		}
+		
+		System.out.println(url);
+		
+		return url;
+	}
+	
 
 /**
  * A simple test driver
