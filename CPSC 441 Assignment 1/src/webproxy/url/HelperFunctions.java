@@ -8,6 +8,16 @@ import java.io.IOException;
 public class HelperFunctions
 {
 	
+	/**
+	 * 
+	 * Creates the path and file for caching
+	 * and writes to the newly created file
+	 * 
+	 * @param output - The output that will be sent to a file
+	 * @param pathName - the path name that the output file will need
+	 * @param hostName - the host name that the output file will need
+	 */
+	
 	public static void createFiles(String output, String pathName, String hostName)
 	{
 		File protocolidentifierfile;
@@ -18,6 +28,7 @@ public class HelperFunctions
 		char [] outputArray = output.toCharArray();
 		
 		
+		//Create the "http" folder
 		protocolidentifierfile = new File("http");
 		if(!protocolidentifierfile.exists() || !protocolidentifierfile.isDirectory())
 		{
@@ -25,8 +36,8 @@ public class HelperFunctions
 		}
 		
 		
+		//Create the host name folder
 		hostNameFile = new File("http" + File.separator + hostName);
-		
 		if(!hostNameFile.exists() || !hostNameFile.isDirectory())
 		{
 			hostNameFile.mkdir();
@@ -36,6 +47,8 @@ public class HelperFunctions
 		parentFile = new File("http" + File.separator + hostName);
 		parentFile.mkdirs();
 		
+		
+		//Create the path name
 		pathNameFile = new File(parentFile,pathName);
 		pathNameFile.getParentFile().mkdirs();
 		
@@ -55,7 +68,7 @@ public class HelperFunctions
 					}
 					else
 					{
-						writer.write("\r\n");
+						writer.write("\r\n"); //since windows systems need the \r
 					}
 				}
 				

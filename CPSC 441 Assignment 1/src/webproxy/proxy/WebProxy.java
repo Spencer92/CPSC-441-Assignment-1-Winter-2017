@@ -53,7 +53,7 @@ public class WebProxy {
 		  String fullLengthData = "";
 		  InputStream stream;
 		  ServerSocket serverSocket = null;
-		  int test;
+		  int testForEnd;
 		  byte [] data = new byte[1];
 		  this.port = port;
 		  
@@ -71,24 +71,27 @@ public class WebProxy {
 			 
 			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			 
+			 
+			 //The end of the stream is reached if \r\n\r\n is reached
+			 //Or if the stream ends
 			 do
 			 {
-				 test = stream.read(data);
+				 testForEnd = stream.read(data);
 				 s = new String(data);
 				 fullLengthData += new String(data);
 				 if(s.equals("\r"))
 				 {
-					 test = stream.read(data);
+					 testForEnd = stream.read(data);
 					 s = new String(data);
 					 fullLengthData += new String(data);
 					 if(s.equals("\n"))
 					 {
-						 test = stream.read(data);
+						 testForEnd = stream.read(data);
 						 s = new String(data);
 						 fullLengthData += new String(data);
 						 if(s.equals("\r"))
 						 {
-							 test = stream.read(data);
+							 testForEnd = stream.read(data);
 							 s = new String(data);
 							 fullLengthData += new String(data);
 							 if(s.equals("\n"))
@@ -99,7 +102,7 @@ public class WebProxy {
 						 }
 					 }
 				 }
-			 }while(test != 0);
+			 }while(testForEnd != -1);
 			 
 
 		     stream.close();
@@ -124,20 +127,24 @@ public class WebProxy {
      */
 	public void start()
 	{
+		
+		//Split the website information up
 		String getRequest = WebsiteInfo.getWebsiteRequest(this.allData);
 		String url = WebsiteInfo.getHostRequest(getRequest);
 		String fullUrl = WebsiteInfo.httpRequest(getRequest);
+
+		
 		ServerSocket serverSocket = null;
 		Socket socket = null;
 		BufferedReader reader;
 		String line;
-
+		String checkData;
 		
 		InputStream stream = null;
 		PrintWriter outputStream = null;
 		String output = "";
 		byte [] data = new byte[1];
-		int test;
+		int testForEnd;
 		
 		try {
 			
@@ -151,60 +158,57 @@ public class WebProxy {
 				outputStream.flush();
 				stream = socket.getInputStream();
 				
+				
+				//wait for the stream to respond
 				while(stream.available() == 0)
 					;
-								
 				
-				String s;
-				
+				//keep reading until you hit \r\n\r\n, as that is the end of header information
 				do
 				{
-					test = stream.read(data);
-					s = new String(data);
+					testForEnd = stream.read(data);
+					checkData = new String(data);
 
-					if(s.equals("\r"))
+					if(checkData.equals("\r"))
 					{
-						test = stream.read(data);
-						s = new String(data);
-						if(s.equals("\n"))
+						testForEnd = stream.read(data);
+						checkData = new String(data);
+						if(checkData.equals("\n"))
 						{
-							test = stream.read(data);
-							s = new String(data);
-							if(s.equals("\r"))
+							testForEnd = stream.read(data);
+							checkData = new String(data);
+							if(checkData.equals("\r"))
 							{
-								test = stream.read(data);
-								s = new String(data);
-								if(s.equals("\n"))
+								testForEnd = stream.read(data);
+								checkData = new String(data);
+								if(checkData.equals("\n"))
 								{
-									test = stream.read(data);
+									testForEnd = stream.read(data);
 									break;
 								}
 							}
 						}
 					}
-				}while(test != -1);
+				}while(testForEnd != -1);
+				//If the test reaches -1, the end of the stream has been reached
 				
-				
-				while(test != -1)
+				while(testForEnd != -1)
 				{
-					s = new String(data);
+					checkData = new String(data);
 					
 					output += new String(data);
-					test = stream.read(data);					
+					testForEnd = stream.read(data);					
 					
 				}
 				socket.close();
 				outputStream.close();
-				
 
-				
-				
 				HelperFunctions.createFiles(output,this.pathName,this.hostName);
 				stream.close();				
 				
 				
 			}
-			else
+			else //If the website was cached
 			{
 				reader = new BufferedReader(new FileReader("http" + File.separator + this.hostName + File.separator + this.pathName));
 				
@@ -214,6 +218,8 @@ public class WebProxy {
 				}
 				System.out.println("used cache");
 			}
+			
+			//display the output that was given
 			serverSocket = new ServerSocket(this.port);
 			socket = serverSocket.accept();
 			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
@@ -231,24 +237,26 @@ public class WebProxy {
 	}
 
 
+	/**
+	 * 
+	 * Checks whether a website has been cached or not
+	 * 
+	 * @param website - The website to be checked
+	 * @return whether or not the website was cached
+	 */
+	
+	
 	boolean isCached(String website)
 	{
 		char [] websiteArray = website.toCharArray();
-		File protocolidentifierfile;
-		File hostNameFile;
-		File pathNameFile;
-		Path path;
 		
-		String protocolidentifier = "http";
 		String hostName = "";
 		String pathName = "";
 		int index = 7; //Where the website name starts
 
 		
 		
-		protocolidentifierfile = new File(protocolidentifier);
-
-		
+		//separate the host name and path name
 		while(websiteArray[index] != '/')
 		{
 			hostName += Character.toString(websiteArray[index]);
@@ -261,17 +269,11 @@ public class WebProxy {
 			pathName += Character.toString(websiteArray[index]);
 			index++;
 		}
-		
-		pathNameFile = new File(pathName);
 		this.pathName = pathName;
-		
-		hostNameFile = new File(hostName);
 		this.hostName = hostName;
 
-		
-		
-		
-		
+
+		//Check if the paths exist
 		if(!Files.exists(Paths.get("http")))
 		{
 			return false;
@@ -289,14 +291,11 @@ public class WebProxy {
 		
 		return true;
 	}
-	
-	
-//http://pages.cpsc.ucalgary.ca/~cyriac.james/readlist.pdf	
+
 /**
  * A simple test driver
 */
 	public static void main(String[] args) {
-//   http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt
 		String server = "localhost"; // webproxy and client runs in the same machine
 //		String server = "http://pages.cpsc.ucalgary.ca/";
 		
