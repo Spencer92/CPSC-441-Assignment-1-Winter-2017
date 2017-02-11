@@ -1,10 +1,14 @@
 package webproxy.proxy;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,6 +19,9 @@ import java.util.Scanner;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * WebProxy Class
@@ -32,6 +39,8 @@ public class WebProxy {
 	static final int PORT_NUMBER = 80;
 	private PrintWriter outputStream = null;
 	private int port;
+	String hostName;
+	String pathName;
 	
      /**
      *  Constructor that initalizes the server listenig port
@@ -175,8 +184,13 @@ public class WebProxy {
 		String url = getHostRequest(getRequest);
 		String fullUrl = httpRequest(getRequest);
 		ServerSocket serverSocket = null;
-		
-		
+		Socket socket = null;
+		BufferedReader reader;
+		BufferedWriter writer;
+		String line;
+
+//		ArrayList<Byte> outputBytes = new ArrayList<Byte>();
+//		byte [] byteStream;
 		
 		InputStream stream = null;
 		PrintWriter outputStream = null;
@@ -189,106 +203,130 @@ public class WebProxy {
 			
 			System.out.println("request is " + getRequest);
 			
-			Socket socket = new Socket(url,PORT_NUMBER);
-			System.out.println(socket.getLocalSocketAddress());
-			System.out.println(socket.getInetAddress());
-			System.out.println("url is " + url);
-//			stream = socket.getInputStream();
-			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
-			
-			outputStream.println(getRequest);
-//			outputStream.println(fullUrl);
-			outputStream.flush();
-
-			
-//			outputStream.println("Wsadrfa");
-//			outputStream.flush();
-			
-			stream = socket.getInputStream();
-			
-			while(stream.available() == 0)
-				;
-			
-			System.out.println(stream.available());
-			System.out.println(stream.toString());
-			
-			
-//			displayText = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
-			
-
-			String s;
-			
-			do
+			if(!isCached(fullUrl))
 			{
-				test = stream.read(data);
-				s = new String(data);
-//				outputStream.print(s);
-				if(s.equals("\r"))
+				socket = new Socket(url,PORT_NUMBER);
+				System.out.println(socket.getLocalSocketAddress());
+				System.out.println(socket.getInetAddress());
+				System.out.println("url is " + url);
+	//			stream = socket.getInputStream();
+				outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+				
+				outputStream.println(getRequest);
+	//			outputStream.println(fullUrl);
+				outputStream.flush();
+	
+				
+	//			outputStream.println("Wsadrfa");
+	//			outputStream.flush();
+				
+				stream = socket.getInputStream();
+				
+				while(stream.available() == 0)
+					;
+				
+				System.out.println(stream.available());
+				System.out.println(stream.toString());
+				
+				
+	//			displayText = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+				
+	
+				String s;
+				
+				do
 				{
 					test = stream.read(data);
 					s = new String(data);
-					if(s.equals("\n"))
+	//				outputStream.print(s);
+					if(s.equals("\r"))
 					{
 						test = stream.read(data);
 						s = new String(data);
-						if(s.equals("\r"))
+						if(s.equals("\n"))
 						{
 							test = stream.read(data);
 							s = new String(data);
-							if(s.equals("\n"))
+							if(s.equals("\r"))
 							{
 								test = stream.read(data);
-								break;
+								s = new String(data);
+								if(s.equals("\n"))
+								{
+									test = stream.read(data);
+									break;
+								}
 							}
 						}
 					}
-				}
-			}while(test != -1);
-			
-//			outputStream.flush();
-			
-			
-			
-			while(test != -1)
-			{
-				s = new String(data);
+				}while(test != -1);
+				
+	//			outputStream.flush();
 				
 				
 				
-				output += new String(data);
-				test = stream.read(data);
-				
-//				outputStream.append(s.charAt(0));
-//				displayText.write(s);
-				
-				if(!s.equals("\n") && !s.equals("\r"))
+				while(test != -1)
 				{
-					System.out.print(s);
+					s = new String(data);
+	//				outputBytes.add(data[0]);
+					
+					
+					output += new String(data);
+					test = stream.read(data);
+					
+	//				outputStream.append(s.charAt(0));
+	//				displayText.write(s);
+					
+					if(!s.equals("\n") && !s.equals("\r"))
+					{
+						System.out.print(s);
+					}
+					else if(s.equals("\r"))
+					{
+						System.out.print("\\r");
+					}
+					else if(s.equals("\n"))
+					{
+						System.out.println("\\n");
+					}
+					
+			
+					
+					
 				}
-				else if(s.equals("\r"))
-				{
-					System.out.print("\\r");
-				}
-				else if(s.equals("\n"))
-				{
-					System.out.println("\\n");
-				}
+				socket.close();
+				outputStream.close();
 				
-		
+
+				
+				
+				createFiles(output);
+				stream.close();				
 				
 				
 			}
-			outputStream.close();
+			else
+			{
+				reader = new BufferedReader(new FileReader("http" + File.separator + this.hostName + File.separator + this.pathName));
+				
+				while((line = reader.readLine()) != null)
+				{
+					output += line + "\r";
+				}
+				
+			}
 			serverSocket = new ServerSocket(this.port);
 			socket = serverSocket.accept();
+//			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+
 			outputStream.print(output);
 //			displayText.print(output);
 //			displayText.flush();
 			outputStream.flush();
 			outputStream.close();
 //			displayText.close();
-			stream.close();
+
 			
 			
 		} catch (IOException e) {
@@ -297,6 +335,64 @@ public class WebProxy {
 		}
 	}
 
+	public void createFiles(String output)
+	{
+		File protocolidentifierfile;
+		File hostNameFile;
+		File pathNameFile;
+		BufferedWriter writer;
+		File parentFile;
+		char [] outputArray = output.toCharArray();
+		
+		
+		protocolidentifierfile = new File("http");
+		if(!protocolidentifierfile.exists() || !protocolidentifierfile.isDirectory())
+		{
+			protocolidentifierfile.mkdir();
+		}
+		
+		
+		hostNameFile = new File("http" + File.separator + this.hostName);
+		
+		if(!hostNameFile.exists() || !hostNameFile.isDirectory())
+		{
+			hostNameFile.mkdir();
+		}
+		
+		
+		parentFile = new File("http" + File.separator + this.hostName);
+		parentFile.mkdirs();
+		
+		pathNameFile = new File(parentFile,this.pathName);
+		pathNameFile.getParentFile().mkdirs();
+		
+		
+		if(!pathNameFile.exists() || pathNameFile.isDirectory())
+		{
+			try {
+				
+				pathNameFile.createNewFile();				
+				writer = new BufferedWriter(new FileWriter(pathNameFile));
+				
+				for(int i = 0; i < outputArray.length; i++)
+				{
+					if(outputArray[i] != '\n')
+					{
+						writer.write(outputArray[i]);
+					}
+					else
+					{
+						writer.write("\r\n");
+					}
+				}
+				
+				writer.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	public String getHostRequest(String websiteRequest)
 	{
@@ -357,10 +453,10 @@ public class WebProxy {
 		String fullUrl = "";
 		int index = 0;
 		
-/*		while(websiteRequestArray[index] != 'h')
+		while(websiteRequestArray[index] != 'h')
 		{
 			index++;
-		}*/
+		}
 		
 		while(websiteRequestArray[index] != ' ')
 		{
@@ -373,6 +469,69 @@ public class WebProxy {
 	}
 	
 
+	boolean isCached(String website)
+	{
+		char [] websiteArray = website.toCharArray();
+		File protocolidentifierfile;
+		File hostNameFile;
+		File pathNameFile;
+		Path path;
+		
+		String protocolidentifier = "http";
+		String hostName = "";
+		String pathName = "";
+		int index = 7; //Where the website name starts
+
+		
+		
+		protocolidentifierfile = new File(protocolidentifier);
+
+		
+		while(websiteArray[index] != '/')
+		{
+			hostName += Character.toString(websiteArray[index]);
+			index++;
+		}
+		index++;
+
+		while(index < websiteArray.length)
+		{
+			pathName += Character.toString(websiteArray[index]);
+			index++;
+		}
+		
+		pathNameFile = new File(pathName);
+		this.pathName = pathName;
+		
+		hostNameFile = new File(hostName);
+		this.hostName = hostName;
+
+		
+		
+		
+		
+		if(!Files.exists(Paths.get("http")))
+		{
+			return false;
+		}
+		
+//		path = Paths.get("http" + hostName);
+		
+		if(!Files.exists(Paths.get("http" + "/" + hostName)))
+		{		
+			return false;
+		}
+		
+		if(!Files.exists(Paths.get("http" + "/" + hostName + "/" + pathName)))
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	
+//http://pages.cpsc.ucalgary.ca/~cyriac.james/readlist.pdf	
 /**
  * A simple test driver
 */
