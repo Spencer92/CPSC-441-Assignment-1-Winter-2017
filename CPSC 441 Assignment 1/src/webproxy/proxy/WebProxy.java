@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import webproxy.url.HelperFunctions;
+import webproxy.url.WebsiteInfo;
 
 /**
  * WebProxy Class
@@ -124,7 +125,7 @@ public class WebProxy {
 	public void start()
 	{
 		String getRequest = getWebsiteRequest();
-		String url = getHostRequest(getRequest);
+		String url = WebsiteInfo.getHostRequest(getRequest);
 		String fullUrl = httpRequest(getRequest);
 		ServerSocket serverSocket = null;
 		Socket socket = null;
@@ -229,65 +230,6 @@ public class WebProxy {
 		}
 	}
 /*
-	public void createFiles(String output)
-	{
-		File protocolidentifierfile;
-		File hostNameFile;
-		File pathNameFile;
-		BufferedWriter writer;
-		File parentFile;
-		char [] outputArray = output.toCharArray();
-		
-		
-		protocolidentifierfile = new File("http");
-		if(!protocolidentifierfile.exists() || !protocolidentifierfile.isDirectory())
-		{
-			protocolidentifierfile.mkdir();
-		}
-		
-		
-		hostNameFile = new File("http" + File.separator + this.hostName);
-		
-		if(!hostNameFile.exists() || !hostNameFile.isDirectory())
-		{
-			hostNameFile.mkdir();
-		}
-		
-		
-		parentFile = new File("http" + File.separator + this.hostName);
-		parentFile.mkdirs();
-		
-		pathNameFile = new File(parentFile,this.pathName);
-		pathNameFile.getParentFile().mkdirs();
-		
-		
-		if(!pathNameFile.exists() || pathNameFile.isDirectory())
-		{
-			try {
-				
-				pathNameFile.createNewFile();				
-				writer = new BufferedWriter(new FileWriter(pathNameFile));
-				
-				for(int i = 0; i < outputArray.length; i++)
-				{
-					if(outputArray[i] != '\n')
-					{
-						writer.write(outputArray[i]);
-					}
-					else
-					{
-						writer.write("\r\n");
-					}
-				}
-				
-				writer.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-*/	
 	public String getHostRequest(String websiteRequest)
 	{
 		char [] allDataArray = websiteRequest.toCharArray();
@@ -312,7 +254,7 @@ public class WebProxy {
 		}
 		
 		return url;
-	}
+	}*/
 
 	public String getWebsiteRequest()
 	{
