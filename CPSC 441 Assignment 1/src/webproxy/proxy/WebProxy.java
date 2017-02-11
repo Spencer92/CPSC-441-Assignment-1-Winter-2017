@@ -124,9 +124,9 @@ public class WebProxy {
      */
 	public void start()
 	{
-		String getRequest = getWebsiteRequest();
+		String getRequest = WebsiteInfo.getWebsiteRequest(this.allData);
 		String url = WebsiteInfo.getHostRequest(getRequest);
-		String fullUrl = httpRequest(getRequest);
+		String fullUrl = WebsiteInfo.httpRequest(getRequest);
 		ServerSocket serverSocket = null;
 		Socket socket = null;
 		BufferedReader reader;
@@ -212,7 +212,7 @@ public class WebProxy {
 				{
 					output += line + "\r";
 				}
-				
+				System.out.println("used cache");
 			}
 			serverSocket = new ServerSocket(this.port);
 			socket = serverSocket.accept();
@@ -229,81 +229,7 @@ public class WebProxy {
 			e.printStackTrace();
 		}
 	}
-/*
-	public String getHostRequest(String websiteRequest)
-	{
-		char [] allDataArray = websiteRequest.toCharArray();
-		String url = "";
-		int index = 0;
-		
-		while(allDataArray[index] != '\n')
-		{
-			index++;
-		}
-		
-		while(allDataArray[index] != ' ')
-		{
-			index++;
-		}
-		index++;
-		
-		while(allDataArray[index] != '\r')
-		{
-			url += Character.toString(allDataArray[index]);
-			index++;
-		}
-		
-		return url;
-	}*/
 
-	public String getWebsiteRequest()
-	{
-		char [] allDataArray = this.allData.toCharArray();
-		String getRequest = "";
-		int index = 0;
-		
-		
-		
-		do
-		{
-			getRequest += Character.toString(allDataArray[index]);
-			index++;
-		}while(allDataArray[index] != '\n');
-		
-		do
-		{
-			getRequest += Character.toString(allDataArray[index]);
-			index++;
-		}while(allDataArray[index] != '\n');
-		
-		getRequest += "\n";
-		
-
-		
-		return getRequest;
-	}
-	
-	public String httpRequest(String websiteRequest)
-	{
-		char[] websiteRequestArray = websiteRequest.toCharArray();
-		String fullUrl = "";
-		int index = 0;
-		
-		while(websiteRequestArray[index] != 'h')
-		{
-			index++;
-		}
-		
-		while(websiteRequestArray[index] != ' ')
-		{
-			fullUrl += Character.toString(websiteRequestArray[index]);
-			index++;
-		}
-		
-		return fullUrl;
-		
-	}
-	
 
 	boolean isCached(String website)
 	{
@@ -350,8 +276,6 @@ public class WebProxy {
 		{
 			return false;
 		}
-		
-//		path = Paths.get("http" + hostName);
 		
 		if(!Files.exists(Paths.get("http" + "/" + hostName)))
 		{		

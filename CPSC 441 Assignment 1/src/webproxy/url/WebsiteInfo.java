@@ -25,6 +25,56 @@ public class WebsiteInfo
 			index++;
 		}
 		
+		
+		
 		return url;
+	}
+	
+	public static String getWebsiteRequest(String allData)
+	{
+		char [] allDataArray = allData.toCharArray();
+		String getRequest = "";
+		int index = 0;
+		
+		
+		
+		do
+		{
+			getRequest += Character.toString(allDataArray[index]);
+			index++;
+		}while(allDataArray[index] != '\n');
+		
+		do
+		{
+			getRequest += Character.toString(allDataArray[index]);
+			index++;
+		}while(allDataArray[index] != '\n');
+		
+		getRequest += "\n";
+		
+
+		
+		return getRequest;
+	}
+	
+	public static String httpRequest(String websiteRequest)
+	{
+		char[] websiteRequestArray = websiteRequest.toCharArray();
+		String fullUrl = "";
+		int index = 0;
+		
+		while(websiteRequestArray[index] != 'h')
+		{
+			index++;
+		}
+		
+		while(websiteRequestArray[index] != ' ')
+		{
+			fullUrl += Character.toString(websiteRequestArray[index]);
+			index++;
+		}
+		
+		return fullUrl;
+		
 	}
 }
