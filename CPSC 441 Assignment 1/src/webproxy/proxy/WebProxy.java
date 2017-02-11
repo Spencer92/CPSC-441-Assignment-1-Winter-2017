@@ -2,7 +2,9 @@ package webproxy.proxy;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,6 +30,8 @@ public class WebProxy {
         
 	private String allData;
 	static final int PORT_NUMBER = 80;
+	private PrintWriter outputStream = null;
+	private int port;
 	
      /**
      *  Constructor that initalizes the server listenig port
@@ -50,6 +54,8 @@ public class WebProxy {
 		  int test;
 		  byte [] data = new byte[1];
 		  char [] ch = new char["http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".length()];
+		  this.port = port;
+		  
 		  
 		  ch = "http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt".toCharArray();
 		  
@@ -69,7 +75,7 @@ public class WebProxy {
 //			 System.out.println(socket.getOutputStream());
 			 stream = socket.getInputStream();
 			 
-//			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+			 outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			 
 			 do
 			 {
@@ -105,6 +111,8 @@ public class WebProxy {
 				 System.out.print(s);
 //				 outputStream.print(s);
 			 }while(test != 0);
+			 
+//			 outputStream.flush();
 			 
 //			 inputStream = new Scanner(new InputStreamReader(socket.getInputStream()/*new ByteArrayInputStream(byt)*/));
 //			 bis = new ByteArrayInputStream(socket.getInputStream());
@@ -142,6 +150,7 @@ public class WebProxy {
 //		     outputStream.close();
 		     
 		     this.allData = fullLengthData;
+		     serverSocket.close();
 		  }
 		  catch(UnsupportedEncodingException e)
 		  {
@@ -162,27 +171,123 @@ public class WebProxy {
      */
 	public void start()
 	{
-		String url = getWebsite();
+		String getRequest = getWebsiteRequest();
+		String url = getHostRequest(getRequest);
+		String fullUrl = httpRequest(getRequest);
+		ServerSocket serverSocket = null;
+		
+		
+		
 		InputStream stream = null;
 		PrintWriter outputStream = null;
+		PrintWriter displayText = null;
 		String output = "";
 		byte [] data = new byte[1];
 		int test;
 		
 		try {
+			
+			System.out.println("request is " + getRequest);
+			
 			Socket socket = new Socket(url,PORT_NUMBER);
-			stream = socket.getInputStream();
+			System.out.println(socket.getLocalSocketAddress());
+			System.out.println(socket.getInetAddress());
+			System.out.println("url is " + url);
+//			stream = socket.getInputStream();
 			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
-			test = stream.read(data);
+			
+			outputStream.println(getRequest);
+//			outputStream.println(fullUrl);
+			outputStream.flush();
+
+			
+//			outputStream.println("Wsadrfa");
+//			outputStream.flush();
+			
+			stream = socket.getInputStream();
+			
+			while(stream.available() == 0)
+				;
+			
+			System.out.println(stream.available());
+			System.out.println(stream.toString());
+			
+			
+//			displayText = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
+			
+
+			String s;
+			
+			do
+			{
+				test = stream.read(data);
+				s = new String(data);
+//				outputStream.print(s);
+				if(s.equals("\r"))
+				{
+					test = stream.read(data);
+					s = new String(data);
+					if(s.equals("\n"))
+					{
+						test = stream.read(data);
+						s = new String(data);
+						if(s.equals("\r"))
+						{
+							test = stream.read(data);
+							s = new String(data);
+							if(s.equals("\n"))
+							{
+								test = stream.read(data);
+								break;
+							}
+						}
+					}
+				}
+			}while(test != -1);
+			
+//			outputStream.flush();
+			
+			
 			
 			while(test != -1)
 			{
+				s = new String(data);
+				
+				
+				
 				output += new String(data);
 				test = stream.read(data);
+				
+//				outputStream.append(s.charAt(0));
+//				displayText.write(s);
+				
+				if(!s.equals("\n") && !s.equals("\r"))
+				{
+					System.out.print(s);
+				}
+				else if(s.equals("\r"))
+				{
+					System.out.print("\\r");
+				}
+				else if(s.equals("\n"))
+				{
+					System.out.println("\\n");
+				}
+				
+		
+				
+				
 			}
+			outputStream.close();
+			serverSocket = new ServerSocket(this.port);
+			socket = serverSocket.accept();
+			outputStream = new PrintWriter(new DataOutputStream(socket.getOutputStream()));
 			outputStream.print(output);
+//			displayText.print(output);
+//			displayText.flush();
 			outputStream.flush();
 			outputStream.close();
+//			displayText.close();
 			stream.close();
 			
 			
@@ -192,27 +297,79 @@ public class WebProxy {
 		}
 	}
 
-
-	public String getWebsite()
+	
+	public String getHostRequest(String websiteRequest)
 	{
-		char [] allDataArray = this.allData.toCharArray();
+		char [] allDataArray = websiteRequest.toCharArray();
 		String url = "";
 		int index = 0;
 		
-		while(allDataArray[index] != 'h')
+		while(allDataArray[index] != '\n')
 		{
 			index++;
 		}
 		
 		while(allDataArray[index] != ' ')
 		{
+			index++;
+		}
+		index++;
+		
+		while(allDataArray[index] != '\r')
+		{
 			url += Character.toString(allDataArray[index]);
 			index++;
 		}
 		
-		System.out.println(url);
-		
 		return url;
+	}
+
+	public String getWebsiteRequest()
+	{
+		char [] allDataArray = this.allData.toCharArray();
+		String getRequest = "";
+		int index = 0;
+		
+		
+		
+		do
+		{
+			getRequest += Character.toString(allDataArray[index]);
+			index++;
+		}while(allDataArray[index] != '\n');
+		
+		do
+		{
+			getRequest += Character.toString(allDataArray[index]);
+			index++;
+		}while(allDataArray[index] != '\n');
+		
+		getRequest += "\n";
+		
+
+		
+		return getRequest;
+	}
+	
+	public String httpRequest(String websiteRequest)
+	{
+		char[] websiteRequestArray = websiteRequest.toCharArray();
+		String fullUrl = "";
+		int index = 0;
+		
+/*		while(websiteRequestArray[index] != 'h')
+		{
+			index++;
+		}*/
+		
+		while(websiteRequestArray[index] != ' ')
+		{
+			fullUrl += Character.toString(websiteRequestArray[index]);
+			index++;
+		}
+		
+		return fullUrl;
+		
 	}
 	
 
@@ -223,6 +380,7 @@ public class WebProxy {
 //   http://pages.cpsc.ucalgary.ca/~cyriac.james/sample.txt
 		String server = "localhost"; // webproxy and client runs in the same machine
 //		String server = "http://pages.cpsc.ucalgary.ca/";
+		
 		int server_port = 0;
 		try {
                 // check for command line arguments
